@@ -145,6 +145,30 @@ server.post('/status', async(request,response) => {
 })
 
 
+setInterval(async () => {
+    try{
+        await db.collection('participantes').find({
+            lastStatus: {$lte: Date.now() - 10000}
+        }).toArray().then((participantes) => {
+            participantes.forEach(async (participante) => {
+                await db.collection('mensagens').insertOne({
+                    from: participante.name,
+                    to: 'Todos',
+                    text: 'sai da sala...',
+                    type: 'status',
+                    time: dayjs().format('HH:mm:ss')
+                });
+                db.collection('participantes').deleteOne({name: participante.name});
+            })
+        })
+    }
+
+    catch(erro){
+        console.log('erro: ', erro);
+    }
+    
+}, 15000)
+
 
 server.listen(5000, () => {
     console.log("Rodando em http://localhost:5000");
