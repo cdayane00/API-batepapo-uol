@@ -124,6 +124,25 @@ server.post('/messages', async (request, response) => {
     }
 })
 
+server.post('/status', async(request,response) => {
+    const {user} = request.headers;
+
+    try{
+        const verifica = await db.collection('participantes').findOne({name: user});
+
+        if(verifica){
+            await db.collection('participantes').updateOne({name: user}, {$set: {lastStatus: Date.now()}});
+            response.sendStatus(200);
+        }
+        else{
+            response.sendStatus(404);
+        }
+    }
+
+    catch(erro){
+        console.log('erro: ', erro);
+    }
+})
 
 
 
