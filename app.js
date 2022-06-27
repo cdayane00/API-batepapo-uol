@@ -55,6 +55,39 @@ server.post('/participants', async (request, response) => {
 });
 
 
+server.get('/messages', async(request, response) => {
+    try{
+        const {user} = request.headers;
+        const {limit} = request.query;
+
+        if(limit){
+            const req = await db.collection('mensagens').find({
+                $or: [
+                    {to: 'Todos'},
+                    {to: user},
+                    {from: user},
+                    {type: 'message'},
+                ]
+            }).toArray();
+            let mensagens = [...req].reverse().slice(0,limit);
+            response.send(mensagens.reverse());
+        }
+        else{
+            const req = await db.collection('mensagens').find({ 
+                $or: [
+                    {to: 'Todos'},
+                    {to: user},
+                    {from: user}
+                ]}).toArray();
+            let mensagens = [...req];
+            response.send(mensagens);
+        }
+    }
+    catch(erro){
+        console.log('erro: ', erro);
+    }
+})
+
 
 
 
