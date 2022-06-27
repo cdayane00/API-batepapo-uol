@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient} from 'mongodb';
+import { MongoClient, ObjectId} from 'mongodb';
 import dotenv from "dotenv";
 import dayjs from 'dayjs';
 import { authSchema, messageBodySchema } from './schemas.js';
@@ -168,6 +168,32 @@ setInterval(async () => {
     }
     
 }, 15000)
+
+
+server.delete('/messages/:id', async (request, response) =>{
+    const {user} = request.headers;
+    const {id} = request.params;
+
+    try{
+        const mensagem = await db.collection('mensagens').findOne({_id: new ObjectId(id)});
+
+        if(mensagem){
+            if(mensagem.from === user){
+                await db.collection('mensagens').deleteOne({_id: new ObjectId(id)});
+                response.sendStatus(201);
+            }
+            else{
+                response.sendStatus(401);
+            }
+        }
+        else{
+            response.send(404);
+        }
+    }
+    catch(erro){
+        console.log('erro: ', erro);
+    }
+})
 
 
 server.listen(5000, () => {
